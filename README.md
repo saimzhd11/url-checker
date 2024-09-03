@@ -19,7 +19,7 @@ A React application to validate and check the existence of URLs, displaying thei
 
 
    ```bash
-   git clone https://github.com/your-username/url-checker.git
+   git clone https://github.com/saimzhd11/url-checker.git
    cd url-checker
    npm install
    npm run start

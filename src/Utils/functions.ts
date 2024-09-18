@@ -2,16 +2,23 @@ import debounce from "lodash.debounce";
 
 export const checkUrlExists = async (url: string): Promise<string> => {
     try {
-        const response = await fetch(url, { method: 'GET', mode: 'no-cors' });
-        if (response.ok) {
-            return "URL does not exist.";
-        } else {
-            return url.endsWith("/") ? "URL exists and it's a folder." :
-                   url.includes(".") ? "URL exists and it's a file." :
-                   "URL exists.";
+        const response = await fetch("http://localhost:5000/api/check-url", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            return errorData.message;
         }
-    } catch {
-        return "URL does not exist.";
+
+        const data = await response.json();
+        return data.message;
+    } catch (error) {
+        return "Error checking the URL.";
     }
 };
 

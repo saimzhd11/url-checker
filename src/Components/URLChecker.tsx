@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { createDebouncedFunction, checkUrlExists } from "../Utils/functions";
 import { URLInput } from "./URLInput";
@@ -11,47 +11,48 @@ interface FormInputs {
 
 const URLChecker: React.FC = () => {
     const { register, watch, handleSubmit, formState: { errors, touchedFields } } = useForm<FormInputs>({
-        mode: 'onChange', 
+        mode: 'onChange',
     });
     const [urlStatus, setUrlStatus] = useState<string | null>(null);
     const [isValidUrl, setIsValidUrl] = useState<boolean>(true);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-
+    const [requestInProgress, setRequestInProgress] = useState<boolean>(false); 
     const url = watch("url");
 
-    const debouncedCheckUrlExists = useCallback(
-        createDebouncedFunction(async (url: string) => {
-            setIsLoading(true);
+    const debouncedCheckUrlExists = createDebouncedFunction(async (url: string) => {
+        setRequestInProgress(true); 
+        setIsLoading(true); 
+
+        try {
             const status = await checkUrlExists(url);
             setUrlStatus(status);
-            setIsLoading(false);
-        }, 1000),
-        []
-    );
+        } catch (error) {
+            setUrlStatus("Error checking URL.");
+            console.error(error);
+        } finally {
+            setIsLoading(false); 
+            setRequestInProgress(false); }
+    }, 1000); 
 
     useEffect(() => {
         const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
         const isUrlValid = urlPattern.test(url);
 
-        if (url) {  
-            setIsValidUrl(isUrlValid);
-
-            if (isUrlValid) {
-                debouncedCheckUrlExists(url);
-            } else {
-                setUrlStatus("Invalid URL format.");
-                setIsLoading(false);
-            }
-        } else {
-            setIsValidUrl(true); 
+        if (url && isUrlValid && !requestInProgress) {
+            setIsValidUrl(true);
+            debouncedCheckUrlExists(url);
+        } else if (!isUrlValid && url) {
+            setUrlStatus("Invalid URL format.");
+            setIsLoading(false);
+        } else if (!url) {
+            setIsValidUrl(true);
             setUrlStatus(null);
             setIsLoading(false);
         }
-    }, [url, debouncedCheckUrlExists]);
-
+    }, [url]); 
     const onSubmit: SubmitHandler<FormInputs> = () => {
-        if (isValidUrl) {
-            debouncedCheckUrlExists(url);
+        if (isValidUrl && !requestInProgress) {
+            debouncedCheckUrlExists(url); 
         }
     };
 
@@ -60,12 +61,8 @@ const URLChecker: React.FC = () => {
             <h1 className="text-2xl mb-4">URL Checker</h1>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <URLInput
-                    register={register("url", { 
+                    register={register("url", {
                         required: "URL is required.",
-                        pattern: {
-                            value: /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i,
-                            message: "Invalid URL format."
-                        }
                     })}
                     error={errors.url}
                     touched={touchedFields.url}

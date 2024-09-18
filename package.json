@@ -11,6 +11,9 @@
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.20",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "node-fetch": "^3.3.2",
     "postcss": "^8.4.44",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -24,7 +27,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "start:server": "nodemon server/mockServer.js"
   },
   "eslintConfig": {
     "extends": [
@@ -45,6 +49,7 @@
     ]
   },
   "devDependencies": {
-    "@types/lodash.debounce": "^4.0.9"
+    "@types/lodash.debounce": "^4.0.9",
+    "nodemon": "^3.1.4"
   }
 }
